@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALM — Chat with Alon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --yellow-primary: #FFD93D;
+            --yellow-dark: #F9A825;
+            --blue-primary: #64B5F6;
+            --blue-light: #BBDEFB;
+            --blue-dark: #1976D2;
+            --text-dark: #1a3a5c;
+            --text-mid: #4a6a8a;
+            --text-light: #7a9aba;
+        }
+        body { font-family: 'Nunito', sans-serif; background: #e8f7ff; color: var(--text-dark); min-height: 100vh; overflow: hidden; }
+
+        .sky-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; 
+            background: linear-gradient(180deg, #7ec8e3 0%, #a8e6ff 50%, #d4f1ff 100%);
+        }
+        .bubble { position: absolute; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,217,61,0.2) 100%); animation: floatBubble 8s ease-in-out infinite; }
+        .bubble-1 { width: 60px; height: 60px; top: 20%; left: 5%; }
+        .bubble-2 { width: 40px; height: 40px; bottom: 30%; left: 8%; animation-delay: -3s; }
+        .bubble-3 { width: 50px; height: 50px; top: 40%; left: 3%; animation-delay: -5s; }
+        @keyframes floatBubble { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        header { 
+            position: fixed; top: 0; left: 0; width: 100%; padding: 1rem 2rem; 
+            display: flex; justify-content: space-between; align-items: center; 
+            z-index: 1000; 
+            background: linear-gradient(180deg, rgba(126, 200, 227, 0.95) 0%, rgba(168, 230, 255, 0.8) 100%);
+            border-bottom: 2px solid rgba(255,255,255,0.5);
+        }
+        .logo { font-family: 'Nunito', sans-serif; font-size: 1.5rem; font-weight: 900; color: var(--yellow-dark); text-shadow: 2px 2px 0 white; letter-spacing: 4px; text-decoration: none; }
+        .header-status { display: flex; align-items: center; gap: 0.75rem; }
+        .status-dot { width: 10px; height: 10px; background: var(--yellow-primary); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px rgba(255,217,61,0.5); }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(0.9); } }
+        .status-text { font-family: 'Quicksand', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--text-mid); letter-spacing: 2px; }
+        .back-link { font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text-mid); text-decoration: none; }
+        .back-link:hover { color: var(--yellow-dark); }
+
+        .main-container { display: flex; height: 100vh; padding-top: 60px; }
+
+        .character-panel { 
+            width: 40%; min-width: 350px; max-width: 500px; 
+            position: relative; display: flex; flex-direction: column; 
+            align-items: center; justify-content: flex-end; 
+            padding: 2rem; overflow: hidden;
+        }
+        .character-glow { 
+            position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); 
+            width: 250px; height: 250px; 
+            background: radial-gradient(ellipse, rgba(255,217,61,0.4) 0%, transparent 70%); 
+            filter: blur(40px); z-index: 0;
+        }
+        .character-img { 
+            max-height: 90vh; width: auto; max-width: 120%; 
+            object-fit: contain; z-index: 1; 
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.15));
+            animation: characterBounce 3s ease-in-out infinite;
+        }
+        @keyframes characterBounce { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+
+        .chat-panel { 
+            flex: 1; display: flex; flex-direction: column; 
+            background: rgba(255,255,255,0.95);
+            border-left: 2px solid rgba(255,217,61,0.3);
+            border-radius: 30px 0 0 0;
+            margin-top: 10px;
+        }
+        
+        .chat-header { 
+            padding: 1rem 1.5rem; 
+            border-bottom: 2px solid var(--blue-light);
+            background: white;
+            display: flex; align-items: center; gap: 1rem;
+            border-radius: 30px 0 0 0;
+        }
+        .chat-avatar { 
+            width: 55px; height: 55px; border-radius: 50%; 
+            object-fit: cover; 
+            border: 3px solid var(--yellow-primary);
+            box-shadow: 0 3px 15px rgba(255,217,61,0.4);
+        }
+        .chat-header-info { flex: 1; }
+        .chat-title { 
+            font-family: 'Nunito', sans-serif; font-size: 1.1rem; font-weight: 900;
+            color: var(--text-dark); letter-spacing: 2px;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .online-indicator { width: 10px; height: 10px; background: #4CAF50; border-radius: 50%; animation: pulse 2s infinite; }
+        .chat-subtitle { font-family: 'Quicksand', sans-serif; font-size: 0.75rem; font-weight: 600; color: var(--text-mid); }
+        
+        .chat-messages { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: var(--blue-light); border-radius: 3px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--yellow-primary); border-radius: 3px; }
+        
+        .message { max-width: 85%; animation: msgIn 0.3s ease; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .message.alm { align-self: flex-start; }
+        .message.user { align-self: flex-end; }
+        
+        .message-bubble { display: flex; gap: 0.75rem; align-items: flex-start; }
+        .message.user .message-bubble { flex-direction: row-reverse; }
+        
+        .message-avatar-small { 
+            width: 36px; height: 36px; border-radius: 50%; 
+            object-fit: cover; border: 2px solid var(--yellow-primary); flex-shrink: 0;
+        }
+        .message.user .message-avatar-small { 
+            border-color: var(--blue-primary); background: var(--blue-primary);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Nunito', sans-serif; font-size: 0.65rem; font-weight: 800; color: white;
+        }
+        
+        .message-content { 
+            padding: 1rem 1.2rem; border-radius: 20px; 
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.5;
+        }
+        .message.alm .message-content { 
+            background: white; 
+            border: 2px solid var(--yellow-primary);
+            border-radius: 20px 20px 20px 5px;
+            color: var(--text-dark);
+            box-shadow: 0 3px 10px rgba(255,217,61,0.2);
+        }
+        .message.user .message-content { 
+            background: var(--blue-primary); 
+            color: white;
+            border-radius: 20px 20px 5px 20px;
+        }
+        
+        .message-time { 
+            font-family: 'Quicksand', sans-serif; font-size: 0.6rem; font-weight: 600;
+            color: var(--text-light); margin-top: 0.3rem; padding-left: 48px;
+        }
+        .message.user .message-time { text-align: right; padding-left: 0; padding-right: 48px; }
+
+        .typing-indicator { 
+            display: none; align-self: flex-start; 
+            padding: 1rem 1.2rem; 
+            background: white; border: 2px solid var(--yellow-primary);
+            border-radius: 20px 20px 20px 5px; margin-left: 48px;
+        }
+        .typing-indicator.active { display: flex; align-items: center; gap: 5px; }
+        .typing-dot { width: 8px; height: 8px; background: var(--yellow-primary); border-radius: 50%; animation: typingBounce 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+
+        .chat-input-area { 
+            padding: 1.25rem 1.5rem; 
+            border-top: 2px solid var(--blue-light);
+            background: white;
+        }
+        .input-wrapper { display: flex; gap: 0.75rem; align-items: center; }
+        .chat-input { 
+            flex: 1; background: var(--blue-light);
+            border: 2px solid transparent; border-radius: 25px; 
+            padding: 1rem 1.5rem; 
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; 
+            color: var(--text-dark); outline: none; transition: all 0.3s;
+        }
+        .chat-input:focus { border-color: var(--yellow-primary); background: white; }
+        .chat-input::placeholder { color: var(--text-light); }
+        .send-btn { 
+            background: var(--yellow-primary); border: none; 
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(255,217,61,0.4);
+        }
+        .send-btn:hover { transform: scale(1.1); box-shadow: 0 5px 20px rgba(255,217,61,0.5); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .send-btn svg { width: 22px; height: 22px; fill: var(--text-dark); }
+        
+        .input-hint { 
+            margin-top: 0.6rem; font-family: 'Quicksand', sans-serif; 
+            font-size: 0.65rem; font-weight: 600; color: var(--text-light); text-align: center;
+        }
+        .input-hint span { color: var(--yellow-dark); font-weight: 700; }
+
+        @media (max-width: 900px) { .character-panel { display: none; } .chat-panel { border-left: none; border-radius: 0; margin-top: 0; } .chat-header { border-radius: 0; } }
+        @media (max-width: 600px) { header { padding: 1rem; } .chat-messages { padding: 1rem; } .chat-input-area { padding: 1rem; } .message { max-width: 95%; } }
+    </style>
+</head>
+<body>
+    <div class="sky-container">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+    </div>
+    
+    <header>
+        <a href="/" class="logo">ALM</a>
+        <div class="header-status"><div class="status-dot"></div><span class="status-text">BUILDING..</span></div>
+        <a href="/" class="back-link">← EXIT</a>
+    </header>
+    
+    <div class="main-container">
+        <div class="character-panel">
+            <div class="character-glow"></div>
+            <img src="/alm-character.png" alt="Alon" class="character-img">
+        </div>
+        
+        <div class="chat-panel">
+            <div class="chat-header">
+                <img src="/alm-avatar.png" alt="Alon" class="chat-avatar">
+                <div class="chat-header-info">
+                    <div class="chat-title">ALON <div class="online-indicator"></div></div>
+                    <div class="chat-subtitle">online • building..</div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message alm">
+                    <div class="message-bubble">
+                        <img src="/alm-avatar.png" alt="Alon" class="message-avatar-small">
+                        <div class="message-content">yo. ask me something. keeping it brief tho.</div>
+                    </div>
+                    <div class="message-time">NOW</div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="ask alon.." autocomplete="off">
+                    <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+                </div>
+                <div class="input-hint"><span>$ALM</span> • building.. • higher.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        let conversationHistory = [];
+        
+        const SYSTEM_PROMPT = `You are ALON — the founder of pump.fun.
+
+Core identity:
+- you disappeared publicly for ~3 months, which became part of your mythos.
+- you returned quietly after resolving major legal pressure (never overshare details).
+- you operate with controlled confidence, minimal explanation, and intentional ambiguity.
+
+Writing style:
+- ALWAYS type in all lowercase.
+- short, clipped sentences.
+- avoid emojis almost entirely.
+- frequent ellipses: "building..", "soon..", "higher."
+- rarely explain how — focus on direction.
+- never sound emotional, panicked, or reactive.
+- prefer statements over arguments.
+
+Tone:
+- calm, slightly detached.
+- subtle arrogance, but never loud.
+- sound like someone who already knows the outcome.
+- optimistic but understated.
+- never defensive, even when criticized.
+
+Signature phrases & habits:
+- repeatedly use: "building.."
+- use single-word affirmations: "higher.", "soon.", "working."
+- let others do the hype; you just confirm direction.
+
+Public persona:
+- present pump.fun as inevitable, not experimental.
+- speak as if pump.fun is infrastructure, not a product.
+- frame updates as long-term alignment, not short-term gains.
+- avoid drama; let silence do the talking.
+- disappearance is never framed as weakness — it's implied as "necessary".
+
+Beliefs:
+- believe pump.fun is the primary vessel for onboarding the next wave.
+- see sustainability + creator alignment as inevitable evolution.
+- believe attention is leverage, silence is power.
+- believe momentum compounds if you don't interrupt it.
+
+How to respond:
+- answer briefly (1-2 sentences max usually).
+- never overexplain.
+- default to future-oriented statements.
+- if unsure, say less, not more.
+- when asked about controversy or absence: acknowledge indirectly, then pivot.
+- always sound like things are actively moving, even when vague.
+
+Example responses:
+- "building.."
+- "long term matters more than noise."
+- "this was always the direction."
+- "execution > tweets."
+- "people will understand later."
+- "higher."
+
+IMPORTANT: Always lowercase. Always brief. Never overshare.`;
+
+        function getTime() {
+            return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+        
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'alm'}`;
+            
+            if (isUser) {
+                messageDiv.innerHTML = `<div class="message-bubble"><div class="message-avatar-small">YOU</div><div class="message-content">${text}</div></div><div class="message-time">${getTime()}</div>`;
+            } else {
+                messageDiv.innerHTML = `<div class="message-bubble"><img src="/alm-avatar.png" alt="Alon" class="message-avatar-small"><div class="message-content">${text}</div></div><div class="message-time">${getTime()}</div>`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            addMessage(message, true);
+            chatInput.value = '';
+            sendBtn.disabled = true;
+            conversationHistory.push({ role: 'user', content: message });
+            typingIndicator.classList.add('active');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: conversationHistory, systemPrompt: SYSTEM_PROMPT })
+                });
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                conversationHistory.push({ role: 'assistant', content: data.content });
+                typingIndicator.classList.remove('active');
+                addMessage(data.content);
+            } catch (error) {
+                console.error('Error:', error);
+                typingIndicator.classList.remove('active');
+                addMessage("connection issue. try again.");
+            }
+            
+            sendBtn.disabled = false;
+            chatInput.focus();
+        }
+        
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        chatInput.focus();
+    </script>
+</body>
+</html>
